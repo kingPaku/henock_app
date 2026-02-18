@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'firebase_options.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/bien_controller.dart';
 import 'views/auth/login_screen.dart';
@@ -8,12 +9,11 @@ import 'views/home/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialiser Firebase
-  // Note: Vous devrez ajouter les fichiers de configuration Firebase
-  // (google-services.json pour Android et GoogleService-Info.plist pour iOS)
-  await Firebase.initializeApp();
-  
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const MyApp());
 }
 
