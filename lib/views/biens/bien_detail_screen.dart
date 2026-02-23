@@ -18,6 +18,7 @@ class BienDetailScreen extends StatefulWidget {
 class _BienDetailScreenState extends State<BienDetailScreen> {
   bool _isFavoris = false;
   bool _checkingFavoris = true;
+  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -95,8 +96,78 @@ class _BienDetailScreenState extends State<BienDetailScreen> {
     }
   }
 
+  Future<void> _supprimerBien(BienImmobilier bien) async {
+    final authController = context.read<AuthController>();
+    final bienController = context.read<BienController>();
+
+    final isOwner = authController.isAuthenticated &&
+        authController.currentUser?.uid == bien.userId;
+    if (!isOwner) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vous ne pouvez supprimer que vos propres biens'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final bool? confirmation = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Supprimer ce bien ?'),
+        content: const Text(
+          'Cette action retirera le bien de la liste publique. Continuer ?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Supprimer'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmation != true) return;
+
+    setState(() {
+      _isDeleting = true;
+    });
+
+    final success = await bienController.supprimerBien(bien.id!);
+    if (!mounted) return;
+
+    setState(() {
+      _isDeleting = false;
+    });
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bien supprimé avec succès'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context, true);
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(bienController.errorMessage ?? 'Erreur de suppression'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authController = context.watch<AuthController>();
     final bienController = context.watch<BienController>();
     final bien = bienController.bienSelectionne;
 
@@ -120,6 +191,19 @@ class _BienDetailScreenState extends State<BienDetailScreen> {
       appBar: AppBar(
         title: const Text('Détails du bien'),
         actions: [
+          if (authController.isAuthenticated &&
+              authController.currentUser?.uid == bien.userId)
+            IconButton(
+              icon: _isDeleting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.delete_outline),
+              tooltip: 'Supprimer',
+              onPressed: _isDeleting ? null : () => _supprimerBien(bien),
+            ),
           if (_checkingFavoris)
             const Padding(
               padding: EdgeInsets.all(16.0),

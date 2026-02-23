@@ -13,7 +13,7 @@ void main() async {
   await initializeDateFormatting('fr_FR', null);
 
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: DefaultFirebaseOptions.currentPlatform
   );
 
   runApp(const MyApp());

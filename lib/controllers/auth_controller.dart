@@ -2,11 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
-import '../services/firestore_service.dart';
 
 class AuthController with ChangeNotifier {
   final AuthService _authService = AuthService();
-  final FirestoreService _firestoreService = FirestoreService();
 
   UserModel? _currentUser;
   bool _isLoading = false;
@@ -125,18 +123,25 @@ class AuthController with ChangeNotifier {
   }
 
   // Déconnexion
-  Future<void> signOut() async {
+  Future<bool> signOut() async {
     try {
       _isLoading = true;
+      _errorMessage = null;
       notifyListeners();
-      await _authService.signOut();
+
+      // Vider immédiatement l'état local pour refléter la déconnexion UI.
       _currentUser = null;
+      notifyListeners();
+
+      await _authService.signOut();
       _isLoading = false;
       notifyListeners();
+      return true;
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
+      return false;
     }
   }
 

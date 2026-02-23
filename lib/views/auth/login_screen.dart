@@ -184,6 +184,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             ? null
                             : _handleSubmit,
                         style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF800020),
+                          foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         child: authController.isLoading
@@ -193,13 +195,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  OutlinedButton.icon(
-                    onPressed: _handleGoogleSignIn,
-                    icon: const Icon(Icons.g_mobiledata, size: 24),
-                    label: const Text('Continuer avec Google'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
+                  Consumer<AuthController>(
+                    builder: (context, authController, _) {
+                      return OutlinedButton.icon(
+                        onPressed: authController.isLoading
+                            ? null
+                            : _handleGoogleSignIn,
+                        icon: authController.isLoading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.g_mobiledata, size: 24),
+                        label: const Text('Continuer avec Google'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextButton(

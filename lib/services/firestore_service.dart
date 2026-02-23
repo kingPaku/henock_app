@@ -120,7 +120,7 @@ class FirestoreService {
   // DELETE - Supprimer un bien
   Future<void> supprimerBien(String id) async {
     try {
-      await _biensCollection.doc(id).update({'disponible': false});
+      await _biensCollection.doc(id).delete();
     } catch (e) {
       throw Exception('Erreur lors de la suppression du bien: $e');
     }

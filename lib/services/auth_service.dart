@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 
@@ -108,7 +109,33 @@ class AuthService {
   // Déconnexion
   Future<void> signOut() async {
     try {
-      await _googleSignIn.signOut();
+      if (kIsWeb) {
+        // Sur web, FirebaseAuth.signOut suffit pour déconnecter l'utilisateur
+        // de l'application sans dépendre de l'état GoogleSignIn JS.
+        await _auth.signOut();
+        return;
+      }
+
+      final User? user = _auth.currentUser;
+      final bool hasGoogleProvider = user?.providerData
+              .any((provider) => provider.providerId == 'google.com') ??
+          false;
+
+      if (hasGoogleProvider) {
+        try {
+          // Sur web, disconnect/signOut peut lever une assertion si GoogleSignIn
+          // n'a pas été initialisé via le flux JS attendu. On ignore cet échec
+          // pour garantir la déconnexion Firebase.
+          if (!kIsWeb) {
+            try {
+              await _googleSignIn.disconnect();
+            } catch (_) {}
+          }
+          await _googleSignIn.signOut();
+        } catch (e) {
+          debugPrint('Google sign-out warning: $e');
+        }
+      }
       await _auth.signOut();
     } catch (e) {
       throw Exception('Erreur lors de la déconnexion: $e');

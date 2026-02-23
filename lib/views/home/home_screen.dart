@@ -44,12 +44,17 @@ class _HomeScreenState extends State<HomeScreen> {
             onSelected: (value) async {
               if (value == 'logout') {
                 final authController = context.read<AuthController>();
-                await authController.signOut();
+                final success = await authController.signOut();
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Déconnexion réussie'),
-                      backgroundColor: Colors.green,
+                    SnackBar(
+                      content: Text(
+                        success
+                            ? 'Déconnexion réussie'
+                            : (authController.errorMessage ??
+                                'Échec de la déconnexion'),
+                      ),
+                      backgroundColor: success ? Colors.green : Colors.red,
                     ),
                   );
                 }
