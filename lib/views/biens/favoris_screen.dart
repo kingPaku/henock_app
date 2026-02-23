@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/bien_controller.dart';
-import '../../models/bien_immobilier.dart';
 import '../../utils/constants.dart';
 import 'bien_detail_screen.dart';
 
@@ -135,12 +134,13 @@ class _FavorisScreenState extends State<FavorisScreen> {
               trailing: IconButton(
                 icon: const Icon(Icons.favorite, color: Colors.red),
                 onPressed: () async {
+                  final messenger = ScaffoldMessenger.of(context);
                   final success = await bienController.retirerFavoris(
                     authController.currentUser!.uid,
                     bien.id!,
                   );
-                  if (mounted && success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                  if (success) {
+                    messenger.showSnackBar(
                       const SnackBar(
                         content: Text('Retiré des favoris'),
                         backgroundColor: Colors.green,

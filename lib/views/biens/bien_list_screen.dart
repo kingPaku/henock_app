@@ -106,7 +106,7 @@ class BienListScreen extends StatelessWidget {
                       Text('${bien.superficie}m² • ${bien.nombrePieces} pièces'),
                       const SizedBox(height: 4),
                       Text(
-                        '${formatPrix(bien.prix)}',
+                        formatPrix(bien.prix),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.blue,

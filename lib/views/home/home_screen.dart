@@ -36,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 MaterialPageRoute(builder: (context) => const FilterScreen()),
               );
+              if (!context.mounted) return;
               // Recharger les biens après filtrage
               context.read<BienController>().chargerBiens();
             },

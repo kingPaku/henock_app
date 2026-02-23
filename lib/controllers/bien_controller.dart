@@ -7,7 +7,7 @@ class BienController with ChangeNotifier {
   final FirestoreService _firestoreService = FirestoreService();
   final ApiService _apiService = ApiService();
 
-  List<BienImmobilier> _biens = [];
+  final List<BienImmobilier> _biens = [];
   List<BienImmobilier> _biensFavoris = [];
   BienImmobilier? _bienSelectionne;
   bool _isLoading = false;
@@ -72,8 +72,7 @@ class BienController with ChangeNotifier {
 
       // Enrichir avec les données de l'API externe
       if (_bienSelectionne != null) {
-        Map<String, double>? coordinates = await _apiService
-            .getCoordinatesFromAddress(
+        await _apiService.getCoordinatesFromAddress(
           adresse: _bienSelectionne!.adresse,
           ville: _bienSelectionne!.ville,
           codePostal: _bienSelectionne!.codePostal,
@@ -98,8 +97,7 @@ class BienController with ChangeNotifier {
       notifyListeners();
 
       // Enrichir avec les données de l'API externe avant l'ajout
-      Map<String, double>? coordinates = await _apiService
-          .getCoordinatesFromAddress(
+      await _apiService.getCoordinatesFromAddress(
         adresse: bien.adresse,
         ville: bien.ville,
         codePostal: bien.codePostal,

@@ -200,7 +200,7 @@ class _AddBienScreenState extends State<AddBienScreen> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _selectedType,
+                      initialValue: _selectedType,
                       decoration: const InputDecoration(
                         labelText: 'Type *',
                         border: OutlineInputBorder(),

@@ -1,6 +1,6 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import '../models/bien_immobilier.dart';
 
 class ApiService {
   // Exemple d'API externe : API de géocodage pour enrichir les adresses
@@ -37,7 +37,7 @@ class ApiService {
       }
       return null;
     } catch (e) {
-      print('Erreur API géocodage: $e');
+      debugPrint('Erreur API géocodage: $e');
       return null;
     }
   }
@@ -68,7 +68,7 @@ class ApiService {
       }
       return null;
     } catch (e) {
-      print('Erreur API ville: $e');
+      debugPrint('Erreur API ville: $e');
       return null;
     }
   }
@@ -96,7 +96,7 @@ class ApiService {
       }
       return null;
     } catch (e) {
-      print('Erreur API pays: $e');
+      debugPrint('Erreur API pays: $e');
       return null;
     }
   }
