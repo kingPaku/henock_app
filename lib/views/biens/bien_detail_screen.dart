@@ -5,6 +5,7 @@ import '../../controllers/auth_controller.dart';
 import '../../controllers/bien_controller.dart';
 import '../../models/bien_immobilier.dart';
 import '../../utils/constants.dart';
+import 'add_bien_screen.dart';
 
 class BienDetailScreen extends StatefulWidget {
   final String bienId;
@@ -165,6 +166,40 @@ class _BienDetailScreenState extends State<BienDetailScreen> {
     );
   }
 
+  Future<void> _modifierBien(BienImmobilier bien) async {
+    final authController = context.read<AuthController>();
+    final isOwner = authController.isAuthenticated &&
+        authController.currentUser?.uid == bien.userId;
+
+    if (!isOwner) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vous ne pouvez modifier que vos propres biens'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddBienScreen(bienToEdit: bien),
+      ),
+    );
+
+    if (result == true && mounted) {
+      await _loadBien();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bien mis à jour'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authController = context.watch<AuthController>();
@@ -285,7 +320,7 @@ class _BienDetailScreenState extends State<BienDetailScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildInfoItem(
-                          Icons.euro,
+                          Icons.attach_money,
                           formatPrix(bien.prix),
                         ),
                         _buildInfoItem(
@@ -314,6 +349,20 @@ class _BienDetailScreenState extends State<BienDetailScreen> {
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _modifierBien(bien),
+                      icon: const Icon(Icons.edit),
+                      label: const Text(
+                        'Modifier les informations',
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   Text(
                     'Informations',
                     style: Theme.of(context).textTheme.titleLarge,
@@ -323,6 +372,10 @@ class _BienDetailScreenState extends State<BienDetailScreen> {
                   _buildInfoRow('Superficie', '${bien.superficie}m²'),
                   _buildInfoRow('Nombre de pièces', '${bien.nombrePieces}'),
                   _buildInfoRow('Prix', formatPrix(bien.prix)),
+                  _buildInfoRow(
+                    'Statut',
+                    bien.statut,
+                  ),
                   _buildInfoRow(
                     'Date de création',
                     formatDate(bien.dateCreation),

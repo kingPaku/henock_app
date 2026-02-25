@@ -13,6 +13,7 @@ class BienImmobilier {
   final String? userId; // Propriétaire du bien
   final DateTime dateCreation;
   final bool disponible;
+  final String statut;
 
   BienImmobilier({
     this.id,
@@ -29,7 +30,9 @@ class BienImmobilier {
     this.userId,
     DateTime? dateCreation,
     this.disponible = true,
-  }) : dateCreation = dateCreation ?? DateTime.now();
+    String? statut,
+  })  : dateCreation = dateCreation ?? DateTime.now(),
+        statut = statut ?? (disponible ? 'En vente' : 'Retiré de la vente');
 
   // Conversion vers Map pour Firestore
   Map<String, dynamic> toMap() {
@@ -47,11 +50,13 @@ class BienImmobilier {
       'userId': userId,
       'dateCreation': dateCreation.toIso8601String(),
       'disponible': disponible,
+      'statut': statut,
     };
   }
 
   // Création depuis Map (Firestore)
   factory BienImmobilier.fromMap(String id, Map<String, dynamic> map) {
+    final bool disponible = map['disponible'] ?? true;
     return BienImmobilier(
       id: id,
       titre: map['titre'] ?? '',
@@ -68,7 +73,8 @@ class BienImmobilier {
       dateCreation: map['dateCreation'] != null
           ? DateTime.parse(map['dateCreation'])
           : DateTime.now(),
-      disponible: map['disponible'] ?? true,
+      disponible: disponible,
+      statut: map['statut'],
     );
   }
 
@@ -88,6 +94,7 @@ class BienImmobilier {
     String? userId,
     DateTime? dateCreation,
     bool? disponible,
+    String? statut,
   }) {
     return BienImmobilier(
       id: id ?? this.id,
@@ -104,6 +111,7 @@ class BienImmobilier {
       userId: userId ?? this.userId,
       dateCreation: dateCreation ?? this.dateCreation,
       disponible: disponible ?? this.disponible,
+      statut: statut ?? this.statut,
     );
   }
 }

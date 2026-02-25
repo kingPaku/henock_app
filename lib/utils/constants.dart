@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 // Formatage du prix
 String formatPrix(double prix) {
   final formatter = NumberFormat.currency(
-    symbol: '€',
+    symbol: '\$',
     decimalDigits: 0,
     locale: 'fr_FR',
   );

@@ -134,6 +134,46 @@ class BienController with ChangeNotifier {
     }
   }
 
+  // Mettre à jour le statut d'un bien
+  Future<bool> changerStatutBien({
+    required String id,
+    required String statut,
+  }) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      final bienActuel = await _firestoreService.getBienById(id);
+      if (bienActuel == null) {
+        _errorMessage = 'Bien introuvable';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      final bool disponible = statut == 'En vente';
+      final bienMisAJour = bienActuel.copyWith(
+        disponible: disponible,
+        statut: statut,
+      );
+      await _firestoreService.modifierBien(id, bienMisAJour);
+
+      if (_bienSelectionne?.id == id) {
+        _bienSelectionne = bienMisAJour;
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   // Supprimer un bien
   Future<bool> supprimerBien(String id) async {
     try {

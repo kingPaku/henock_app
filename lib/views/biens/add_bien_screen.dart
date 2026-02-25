@@ -5,7 +5,9 @@ import '../../controllers/bien_controller.dart';
 import '../../models/bien_immobilier.dart';
 
 class AddBienScreen extends StatefulWidget {
-  const AddBienScreen({super.key});
+  final BienImmobilier? bienToEdit;
+
+  const AddBienScreen({super.key, this.bienToEdit});
 
   @override
   State<AddBienScreen> createState() => _AddBienScreenState();
@@ -24,6 +26,7 @@ class _AddBienScreenState extends State<AddBienScreen> {
   final _imageUrlController = TextEditingController();
 
   String _selectedType = 'Appartement';
+  String _selectedStatut = 'En vente';
   final List<String> _types = [
     'Appartement',
     'Maison',
@@ -32,7 +35,39 @@ class _AddBienScreenState extends State<AddBienScreen> {
     'Loft',
     'Autre'
   ];
+  final List<String> _statuts = const [
+    'En vente',
+    'Déjà vendu',
+    'Retiré de la vente',
+  ];
   final List<String> _images = [];
+
+  bool get _isEditMode => widget.bienToEdit != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _prefillFormIfNeeded();
+  }
+
+  void _prefillFormIfNeeded() {
+    final bien = widget.bienToEdit;
+    if (bien == null) return;
+
+    _titreController.text = bien.titre;
+    _descriptionController.text = bien.description;
+    _prixController.text = bien.prix.toStringAsFixed(0);
+    _adresseController.text = bien.adresse;
+    _villeController.text = bien.ville;
+    _codePostalController.text = bien.codePostal;
+    _superficieController.text = bien.superficie.toString();
+    _nombrePiecesController.text = bien.nombrePieces.toString();
+    _selectedType = bien.type;
+    _selectedStatut = _statuts.contains(bien.statut)
+        ? bien.statut
+        : (bien.disponible ? 'En vente' : 'Retiré de la vente');
+    _images.addAll(bien.images);
+  }
 
   @override
   void dispose() {
@@ -81,6 +116,7 @@ class _AddBienScreenState extends State<AddBienScreen> {
     }
 
     final bien = BienImmobilier(
+      id: widget.bienToEdit?.id,
       titre: _titreController.text.trim(),
       description: _descriptionController.text.trim(),
       prix: double.parse(_prixController.text.trim()),
@@ -91,26 +127,44 @@ class _AddBienScreenState extends State<AddBienScreen> {
       superficie: int.parse(_superficieController.text.trim()),
       nombrePieces: int.parse(_nombrePiecesController.text.trim()),
       images: _images,
-      userId: authController.currentUser!.uid,
+      userId: widget.bienToEdit?.userId ?? authController.currentUser!.uid,
+      dateCreation: widget.bienToEdit?.dateCreation,
+      disponible: _selectedStatut == 'En vente',
+      statut: _selectedStatut,
     );
 
     final bienController = context.read<BienController>();
-    bool success = await bienController.ajouterBien(bien);
+    final bool success = _isEditMode
+        ? await bienController.modifierBien(widget.bienToEdit!.id!, bien)
+        : await bienController.ajouterBien(bien);
 
     if (!mounted) return;
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bien ajouté avec succès!'),
+        SnackBar(
+          content: Text(
+            _isEditMode
+                ? 'Bien modifié avec succès!'
+                : 'Bien ajouté avec succès!',
+          ),
           backgroundColor: Colors.green,
         ),
       );
-      _resetForm();
+      if (_isEditMode) {
+        Navigator.pop(context, true);
+      } else {
+        _resetForm();
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(bienController.errorMessage ?? 'Erreur lors de l\'ajout'),
+          content: Text(
+            bienController.errorMessage ??
+                (_isEditMode
+                    ? 'Erreur lors de la modification'
+                    : 'Erreur lors de l\'ajout'),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -131,6 +185,7 @@ class _AddBienScreenState extends State<AddBienScreen> {
     setState(() {
       _images.clear();
       _selectedType = 'Appartement';
+      _selectedStatut = 'En vente';
     });
   }
 
@@ -138,7 +193,7 @@ class _AddBienScreenState extends State<AddBienScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ajouter un bien'),
+        title: Text(_isEditMode ? 'Modifier le bien' : 'Ajouter un bien'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -182,7 +237,7 @@ class _AddBienScreenState extends State<AddBienScreen> {
                     child: TextFormField(
                       controller: _prixController,
                       decoration: const InputDecoration(
-                        labelText: 'Prix (€) *',
+                        labelText: 'Prix (\$) *',
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
@@ -219,6 +274,26 @@ class _AddBienScreenState extends State<AddBienScreen> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedStatut,
+                decoration: const InputDecoration(
+                  labelText: 'Statut du bien *',
+                  border: OutlineInputBorder(),
+                ),
+                items: _statuts.map((statut) {
+                  return DropdownMenuItem(
+                    value: statut,
+                    child: Text(statut),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() {
+                    _selectedStatut = value;
+                  });
+                },
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -396,7 +471,9 @@ class _AddBienScreenState extends State<AddBienScreen> {
                     ),
                     child: bienController.isLoading
                         ? const CircularProgressIndicator()
-                        : const Text('Ajouter le bien'),
+                        : Text(_isEditMode
+                            ? 'Enregistrer les modifications'
+                            : 'Ajouter le bien'),
                   );
                 },
               ),

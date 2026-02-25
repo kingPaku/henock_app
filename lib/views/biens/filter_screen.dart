@@ -83,8 +83,8 @@ class _FilterScreenState extends State<FilterScreen> {
                   child: TextField(
                     controller: _prixMinController,
                     decoration: const InputDecoration(
-                      labelText: 'Prix min (€)',
-                      prefixIcon: Icon(Icons.euro),
+                      labelText: 'Prix min (\$)',
+                      prefixIcon: Icon(Icons.attach_money),
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
@@ -95,8 +95,8 @@ class _FilterScreenState extends State<FilterScreen> {
                   child: TextField(
                     controller: _prixMaxController,
                     decoration: const InputDecoration(
-                      labelText: 'Prix max (€)',
-                      prefixIcon: Icon(Icons.euro),
+                      labelText: 'Prix max (\$)',
+                      prefixIcon: Icon(Icons.attach_money),
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
